@@ -27,7 +27,8 @@ async function handleGetUserBlog(req, res) {
 async function handlePostBlog(req, res) {
   try {
     const { title, description, category} = req.body;
-    const image = req.file ? req.file.filename : req.body.image;
+    // Cloudinary stores full URL in req.file.path
+    const image = req.file ? req.file.path : req.body.image;
     const addBlog = await Blog.create({ title, description, category, image, user : req.user._id});
     res.status(201).json({
       success : true,
@@ -43,7 +44,8 @@ async function handleUpdateBlog(req, res) {
   try {
     const updateData = { ...req.body }; // taking body from clent 
     if (req.file) { // seperate checking for files
-      updateData.image = req.file.filename;
+      // Cloudinary stores full URL in req.file.path
+      updateData.image = req.file.path;
     }
     const updateBlog = await Blog.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' }) //
     if(!updateBlog) {

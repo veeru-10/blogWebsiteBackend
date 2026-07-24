@@ -15,9 +15,8 @@ const upload = require('./middlewares/multer.js')
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}));
-const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(cors({
-  origin: allowedOrigin,
+  origin: ['https://vercel.app', 'http://localhost:5173'],
   credentials: true // credentials for cookie-based requests
 }))
 

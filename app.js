@@ -65,7 +65,7 @@ app.post('/api/logout', authMiddleware, (req, res)=> {
   res.clearCookie('token', {
     httpOnly: true,
     secure: isProduction ? true : false,
-    sameSite: 'lax'
+    sameSite: isProduction ? "none" : "lax"
   });
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 })

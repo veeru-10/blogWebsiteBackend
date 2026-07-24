@@ -52,10 +52,11 @@ async function handleLogin(req, res) {
     // Determine if we're in production (Render uses HTTPS)
     const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
     
+    // Set cookie with proper cross-origin settings
     res.cookie("token", token, {
       httpOnly : true,
       secure : isProduction ? true : false, // Use true for HTTPS (Render/Vercel), false for localhost
-      sameSite : "lax",
+      sameSite : isProduction ? "none" : "lax", // Use "none" for cross-origin HTTPS requests
       maxAge: 24 * 60 * 60 * 1000 // 1 day
     })
     res.json({message : "login successful"})

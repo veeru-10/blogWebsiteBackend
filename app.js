@@ -13,18 +13,38 @@ const authMiddleware = require('./middlewares/auth.js')
 const { handleSignUp, handleLogin } = require('./controllers/userController.js')
 const upload = require('./middlewares/multer.js')
 
-app.use(express.json())
-app.use(express.urlencoded({extended: true}));
-app.use(cors({
-  origin: [
-    'https://blog-website-frontend-4c6kqtipu-veeranjinis-projects.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000'
-  ],
-  credentials: true, // credentials for cookie-based requests
+dotenv.config()
+
+// Dynamic CORS configuration to handle Vercel's changing URLs
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests from localhost during development
+    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    // Allow any Vercel deployment
+    if (origin && origin.includes('vercel.app')) {
+      return callback(null, true);
+    }
+    // Allow configured frontend URL from env
+    const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(o => o);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // For production, allow the request anyway if no specific origin header
+    if (!origin) {
+      return callback(null, true);
+    }
+    callback(null, true); // Allow all for now, can be more restrictive if needed
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}))
+};
+
+app.use(express.json())
+app.use(express.urlencoded({extended: true}));
+app.use(cors(corsOptions))
 
 app.use("/uploads", express.static("uploads"));
 app.use(cookieParser())
@@ -40,9 +60,11 @@ app.get('/api/profile', authMiddleware, (req, res) => {
 });
 
 app.post('/api/logout', authMiddleware, (req, res)=> {
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+  
   res.clearCookie('token', {
     httpOnly: true,
-    secure: false,
+    secure: isProduction ? true : false,
     sameSite: 'lax'
   });
   res.status(200).json({ success: true, message: 'Logged out successfully' });

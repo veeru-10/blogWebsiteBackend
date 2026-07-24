@@ -48,10 +48,15 @@ async function handleLogin(req, res) {
 
     const secretKey = process.env.SECRET_KEY || "veeranjini10@";
     const token = jwt.sign({ id: user._id, role: user.role }, secretKey, { expiresIn: '1d' }) // required unique for finding particular user
+    
+    // Determine if we're in production (Render uses HTTPS)
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+    
     res.cookie("token", token, {
       httpOnly : true,
-      secure : false,
-      sameSite : "lax"
+      secure : isProduction ? true : false, // Use true for HTTPS (Render/Vercel), false for localhost
+      sameSite : "lax",
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
     })
     res.json({message : "login successful"})
   } catch(error) {

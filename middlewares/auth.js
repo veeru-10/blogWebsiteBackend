@@ -22,7 +22,7 @@ const authMiddleware = async (req, res, next) => {
     if (!loggedInUser) {
       return res.json({
         success: false,
-        message: "User not found",
+        message: "Unautorized access, Try Again",
       });
     }
 
